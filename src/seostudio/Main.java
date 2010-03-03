@@ -1,7 +1,9 @@
 package seostudio;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Label;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -30,12 +32,16 @@ public class Main {
 	private static void initApp() {
 		String url = "http://localhost:9000/";
 		Crawler c = new Crawler(url, url+"(.*?)");
-		int max = 2;
+		int max = 5;
 		for(int i=0; i<=max; i++) {
 			c.browse(i);
 		}
 		
 		JFrame frame = new JFrame("Results");
+		frame.getContentPane().add(new Label("Indexed pages: " + c.getIndexedPages() 
+				+ ". Indexed and noflow: " + c.getIndexedNoFollowPages() + ". Total pages: "
+				+ c.getResults().size() + ". Connection errors: " + c.getConnectionErrors()
+				+ ". Pages with SEO error: " + c.getSeoErrors()) , BorderLayout.NORTH);
 		JTable table = new JTable(new ResultTableModel(c.getResults().values(), url.length()-1));
 		frame.getContentPane().add(new JScrollPane(table));
 		
@@ -70,6 +76,24 @@ public class Main {
 			}
 		});
 		
+		table.getColumnModel().getColumn(10).setCellRenderer(new DefaultTableCellRenderer() {
+			@Override
+			public Component getTableCellRendererComponent(JTable table,
+					Object value, boolean isSelected, boolean hasFocus,
+					int row, int column) {
+				super.getTableCellRendererComponent(table, value, isSelected, hasFocus,
+						row, column);
+				setBackground(Color.WHITE);
+				
+				setToolTipText(null);
+				if(value != null) {
+					setBackground(Color.RED);
+					setToolTipText(value.toString());
+				}
+				return this;
+			}
+		});
+		
 		frame.setVisible(true);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	}
@@ -80,10 +104,10 @@ class ResultTableModel implements TableModel {
 
 	private final String[] columns = new String[]{ "URL",
 			"D", "L", "Title", "<h1>", "Description",
-			"Keywords", "I", "F", "Error" };
+			"Keywords", "I", "F", "Error", "SEO Errors" };
 	private final Class<?>[] types = new Class<?>[]{ String.class,
 			Integer.class, Integer.class, String.class, String.class, String.class,
-			String.class, Boolean.class, Boolean.class, String.class };
+			String.class, Boolean.class, Boolean.class, String.class, String.class };
 
 	private List<Result> results;
 	private int n;
@@ -149,6 +173,8 @@ class ResultTableModel implements TableModel {
 			return r.follow;
 		case 9:
 			return r.error;
+		case 10:
+			return r.seoError;
 		}
 		return null;
 	}

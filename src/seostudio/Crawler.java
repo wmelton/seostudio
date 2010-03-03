@@ -23,10 +23,17 @@ public class Crawler {
 	private Map<String, Result> results;
 	private Map<Integer, Set<String>> levels;
 	private String regexp;
+	private int indexedPages;
+	private int indexNofollowPages;
+	private int connectionErrors;
+	private int seoErrors;
 	
 	public Crawler(String url, String regexp) {
 		results = new HashMap<String, Result>();
 		levels  = new HashMap<Integer, Set<String>>();
+		indexedPages = 0;
+		indexNofollowPages = 0;
+		connectionErrors = 0;
 		found(url, 0);
 		this.regexp = regexp;
 	}
@@ -98,6 +105,25 @@ public class Crawler {
 				}
 			}
 			
+			if (r.index)
+				indexedPages += 1;
+			
+			if (r.index && !r.follow)
+				indexNofollowPages += 1;
+			
+			if (r.title == null || r.title.isEmpty())
+				r.appendSeoError("Title must be setted.");
+			
+			if (r.index) {
+				if (r.description == null || r.description.isEmpty())
+					r.appendSeoError("Description should be setted");
+				else if (r.description.length() > 160)
+					r.appendSeoError("Description is too long, description length = " + r.description.length());
+			}
+			
+			if (r.seoError != null && !r.seoError.isEmpty())
+				seoErrors += 1;
+				
 			if(!r.follow) return;
 			
 			TagNode[] a = tag.getElementsByName("a", true);
@@ -124,7 +150,8 @@ public class Crawler {
 				}
 			}
 		} catch(Exception e) {
-			r.error = ""+e.getMessage();
+			r.error = "" + e.getMessage();
+			connectionErrors += 1;
 		}
 	}
 	
@@ -141,6 +168,22 @@ public class Crawler {
 	
 	public Map<String, Result> getResults() {
 		return Collections.unmodifiableMap(results);
+	}
+	
+	public int getIndexedPages() {
+		return indexedPages;
+	}
+	
+	public int getIndexedNoFollowPages() {
+		return indexNofollowPages;
+	}
+	
+	public int getConnectionErrors() {
+		return connectionErrors;
+	}
+	
+	public int getSeoErrors() {
+		return seoErrors;
 	}
 
 	public static void main(String[] args) throws Exception {
