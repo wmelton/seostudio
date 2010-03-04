@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Label;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -30,18 +31,23 @@ public class Main {
 	}
 	
 	private static void initApp() {
-		String url = "http://localhost:9000/";
+		long initTime = System.currentTimeMillis();
+		String url = "http://www.masterbranch.com/";
 		Crawler c = new Crawler(url, url+"(.*?)");
 		int max = 5;
 		for(int i=0; i<=max; i++) {
 			c.browse(i);
 		}
+		long endTime = System.currentTimeMillis();
+		
+		long elapsedTime = endTime - initTime;
 		
 		JFrame frame = new JFrame("Results");
 		frame.getContentPane().add(new Label("Indexed pages: " + c.getIndexedPages() 
 				+ ". Indexed and noflow: " + c.getIndexedNoFollowPages() + ". Total pages: "
 				+ c.getResults().size() + ". Connection errors: " + c.getConnectionErrors()
-				+ ". Pages with SEO error: " + c.getSeoErrors()) , BorderLayout.NORTH);
+				+ ". Pages with SEO error: " + c.getSeoErrors() + ". Time spent (total minutes): " + (int)(elapsedTime/60000)
+				+ ". Time spent (per page ms): " + (elapsedTime/c.getResults().size())) , BorderLayout.NORTH);
 		JTable table = new JTable(new ResultTableModel(c.getResults().values(), url.length()-1));
 		frame.getContentPane().add(new JScrollPane(table));
 		
