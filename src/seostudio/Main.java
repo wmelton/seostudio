@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import javax.swing.JFrame;
 import javax.swing.JScrollPane;
@@ -31,7 +32,7 @@ public class Main {
 	
 	private static void initApp() {
 		String url = "http://localhost:9000/";
-		Crawler c = new Crawler(url, url+"(.*?)");
+		Crawler c = new Crawler(url, Pattern.quote(url)+"(.*?)");
 		int max = 5;
 		for(int i=0; i<=max; i++) {
 			c.browse(i);
