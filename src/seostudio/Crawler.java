@@ -27,6 +27,7 @@ public class Crawler {
 	private int indexNofollowPages;
 	private int connectionErrors;
 	private int seoErrors;
+	private int visitedPages;
 	
 	public Crawler(String url, String regexp) {
 		results = new HashMap<String, Result>();
@@ -72,6 +73,7 @@ public class Crawler {
 
 	public void browse(Result r) {
 		try {
+			visitedPages += 1;
 			String url = r.url;
 			TagNode tag = fetchUrl(url);
 			
@@ -132,6 +134,10 @@ public class Crawler {
 			for (TagNode t : a) {
 				String href = t.getAttributeByName("href");
 				if(href == null) continue;
+				
+				String rel = t.getAttributeByName("rel");
+				if("nofollow".equals(rel))
+					continue;
 
 				if(href.endsWith("#"))
 					href = href.substring(0, href.length()-1);
@@ -184,6 +190,10 @@ public class Crawler {
 	
 	public int getSeoErrors() {
 		return seoErrors;
+	}
+	
+	public int getVisitedPages() {
+		return visitedPages;
 	}
 
 	public static void main(String[] args) throws Exception {
