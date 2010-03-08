@@ -119,13 +119,16 @@ public class Crawler {
 			if (r.index) {
 				if (r.description == null || r.description.isEmpty())
 					r.appendSeoError("Description should be setted");
+				else if (r.description.length() < 100)
+					r.appendSeoError("Desription too short " + r.description.length());
 				else if (r.description.length() > 160)
 					r.appendSeoError("Description is too long, description length = " + r.description.length());
 			}
 			
-			if (r.seoError != null && !r.seoError.isEmpty())
+			if (r.seoError != null && !r.seoError.isEmpty()) {
 				seoErrors += 1;
-				
+//				System.out.println(r.url + " - " + r.seoError);
+			}
 			if(!r.follow) return;
 			
 			TagNode[] a = tag.getElementsByName("a", true);
