@@ -40,7 +40,7 @@ public class Main {
 	
 	private void initApp() {
 		long initTime = System.currentTimeMillis();
-		String url = "http://www.masterbranch.com/";
+		String url = "http://localhost:9000/";
 		c = new Crawler(url, Pattern.quote(url)+"(.*?)");
 		int max = 5;
 		for(int i=0; i<=max; i++) {

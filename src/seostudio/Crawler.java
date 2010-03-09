@@ -119,7 +119,7 @@ public class Crawler {
 			if (r.index) {
 				if (r.description == null || r.description.isEmpty())
 					r.appendSeoError("Description should be setted");
-				else if (r.description.length() < 100)
+				else if (r.description.length() < 80)
 					r.appendSeoError("Desription too short " + r.description.length());
 				else if (r.description.length() > 160)
 					r.appendSeoError("Description is too long, description length = " + r.description.length());
@@ -132,18 +132,22 @@ public class Crawler {
 			if(!r.follow) return;
 			
 			TagNode[] a = tag.getElementsByName("a", true);
-
+			
 			URI uri = URI.create(url);
 			for (TagNode t : a) {
 				String href = t.getAttributeByName("href");
-				if(href == null) continue;
+				
+				if(href!= null && href.endsWith("#"))
+					href = href.substring(0, href.length()-1);
+				
+				if(href == null || href.isEmpty()) continue;
 				
 				String rel = t.getAttributeByName("rel");
 				if("nofollow".equals(rel))
 					continue;
+				
 
-				if(href.endsWith("#"))
-					href = href.substring(0, href.length()-1);
+				
 				try {
 					URI found = URI.create(href);
 					if(!found.isAbsolute())
