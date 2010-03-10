@@ -9,8 +9,4 @@ sh build.sh
 
 To run
 
-java -jar seostudio.jar <url> <depth>
-
-Example:
-
-java -jar seostudio.jar http://localhost:9000/ 2
+java -jar seostudio.jar

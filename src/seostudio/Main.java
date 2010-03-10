@@ -18,7 +18,6 @@ package seostudio;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Label;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
@@ -32,6 +31,8 @@ import java.util.regex.Pattern;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -42,47 +43,23 @@ import javax.swing.table.TableModel;
 
 public class Main {
 	
+	private JLabel sinopsis;
 	private Crawler c = null;
-	private String base;
-	private int depth;
-	
-	public Main(String[] args) {
-		if(args.length == 2) {
-			base = args[0];
-			depth = Integer.parseInt(args[1]);
-		} else {
-			base = "http://localhost:9000/";
-			depth = 2;
-		}
-		System.out.println("Starting to crawl "+base+" with depth="+depth);
-	}
 	
 	public static void main(final String[] args) {
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
-				(new Main(args)).initApp();
+				(new Main()).initApp();
 			}
 		});
 	}
 	
 	private void initApp() {
-		long initTime = System.currentTimeMillis();
-		c = new Crawler(base, Pattern.quote(base)+"(.*?)");
-		for(int i=0; i<=depth; i++) {
-			c.browse(i);
-		}
-		long endTime = System.currentTimeMillis();
-		
-		long elapsedTime = endTime - initTime;
-		
 		JFrame frame = new JFrame("Results");
 		
 		JPanel panel = new JPanel(new BorderLayout());
-		panel.add(new Label("Indexed pages: " + c.getIndexedPages() 
-				+ ". Indexed and noflow: " + c.getIndexedNoFollowPages() + ". Visited pages: "
-				+ c.getVisitedPages() + ". Connection errors: " + c.getConnectionErrors()
-				+ ". Pages with SEO error: " + c.getSeoErrors() + ".\nTotal time spent (minutes): " + (int)(elapsedTime/60000)
-				+ ". Time spent per page (ms): " + (elapsedTime/c.getResults().size())));
+		sinopsis = new JLabel("Wait...");
+		panel.add(sinopsis);
 		
 		JButton button = new JButton("Generate Sitemap");
 		button.addActionListener(new ActionListener() {
@@ -98,12 +75,34 @@ public class Main {
 		
 		panel.add(button, BorderLayout.EAST);
 		
-		frame.getContentPane().add(panel , BorderLayout.NORTH);
-		JTable table = new JTable(new ResultTableModel(c.getResults().values(), base.length()-1));
-		frame.getContentPane().add(new JScrollPane(table));
-		
+		frame.getContentPane().add(panel, BorderLayout.NORTH);
 		frame.setSize(1200, 600);
 		frame.setLocationRelativeTo(null);
+		frame.setVisible(true);
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		
+		String base = JOptionPane.showInputDialog(frame, "Enter base URL", "http://localhost:9000/");
+		if(base == null) System.exit(0);
+		
+		int depth = Integer.parseInt(JOptionPane.showInputDialog(frame, "Enter max depth", "2"));
+
+		long initTime = System.currentTimeMillis();
+		c = new Crawler(base, Pattern.quote(base)+"(.*?)");
+		for(int i=0; i<=depth; i++) {
+			c.browse(i);
+		}
+		long endTime = System.currentTimeMillis();
+		long elapsedTime = endTime - initTime;
+		
+		sinopsis.setText("Indexed pages: " + c.getIndexedPages() 
+				+ ". Indexed and noflow: " + c.getIndexedNoFollowPages() + ". Visited pages: "
+				+ c.getVisitedPages() + ". Connection errors: " + c.getConnectionErrors()
+				+ ". Pages with SEO error: " + c.getSeoErrors() + ".\nTotal time spent (minutes): " + (int)(elapsedTime/60000)
+				+ ". Time spent per page (ms): " + (elapsedTime/c.getResults().size()));
+		
+		
+		JTable table = new JTable(new ResultTableModel(c.getResults().values(), base.length()-1));
+		frame.getContentPane().add(new JScrollPane(table));
 
 		table.getColumnModel().getColumn(0).setPreferredWidth(200);
 		table.getColumnModel().getColumn(1).setPreferredWidth(20);
@@ -150,9 +149,6 @@ public class Main {
 				return this;
 			}
 		});
-		
-		frame.setVisible(true);
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	}
 
 }
