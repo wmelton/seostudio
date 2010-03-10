@@ -186,16 +186,4 @@ public class Crawler {
 		return seoErrors;
 	}
 
-	public static void main(String[] args) throws Exception {
-		Crawler c = new Crawler("http://localhost:9000/", "http://localhost:9000(.*?)");
-		c.browse(0);
-		c.browse(1);
-		
-		for (Map.Entry<String, Result> entry : c.results.entrySet()) {
-			System.out.println(entry.getKey());
-			System.out.println(entry.getValue());
-			System.out.println();
-		}
-	}
-
 }
