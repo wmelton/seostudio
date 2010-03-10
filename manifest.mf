@@ -1,0 +1,3 @@
+Main-Class: seostudio.Main
+Class-Path: lib/dom4j-1.6.1.jar lib/htmlcleaner2_1.jar
+

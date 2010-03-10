@@ -1,0 +1,16 @@
+How to compile and run
+======================
+
+Yo need a JDK installed and configured in the PATH environment variable. Try to use "javac" in a Terminal window.
+
+To compile:
+
+sh build.sh
+
+To run
+
+java -jar seostudio.jar <url> <depth>
+
+Example:
+
+java -jar seostudio.jar http://localhost:9000/ 2

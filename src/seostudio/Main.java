@@ -42,23 +42,33 @@ import javax.swing.table.TableModel;
 
 public class Main {
 	
-	Crawler c = null;
+	private Crawler c = null;
+	private String base;
+	private int depth;
 	
-	public static void main(String[] args) {
+	public Main(String[] args) {
+		if(args.length == 2) {
+			base = args[0];
+			depth = Integer.parseInt(args[1]);
+		} else {
+			base = "http://localhost:9000/";
+			depth = 2;
+		}
+		System.out.println("Starting to crawl "+base+" with depth="+depth);
+	}
+	
+	public static void main(final String[] args) {
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
-				
-				(new Main()).initApp();
+				(new Main(args)).initApp();
 			}
 		});
 	}
 	
 	private void initApp() {
 		long initTime = System.currentTimeMillis();
-		String url = "http://localhost:9000/";
-		c = new Crawler(url, Pattern.quote(url)+"(.*?)");
-		int max = 5;
-		for(int i=0; i<=max; i++) {
+		c = new Crawler(base, Pattern.quote(base)+"(.*?)");
+		for(int i=0; i<=depth; i++) {
 			c.browse(i);
 		}
 		long endTime = System.currentTimeMillis();
@@ -89,7 +99,7 @@ public class Main {
 		panel.add(button, BorderLayout.EAST);
 		
 		frame.getContentPane().add(panel , BorderLayout.NORTH);
-		JTable table = new JTable(new ResultTableModel(c.getResults().values(), url.length()-1));
+		JTable table = new JTable(new ResultTableModel(c.getResults().values(), base.length()-1));
 		frame.getContentPane().add(new JScrollPane(table));
 		
 		frame.setSize(1200, 600);
