@@ -27,6 +27,7 @@ public class Crawler {
 	private int indexNofollowPages;
 	private int connectionErrors;
 	private int seoErrors;
+	private int visitedPages;
 	
 	public Crawler(String url, String regexp) {
 		results = new HashMap<String, Result>();
@@ -72,6 +73,7 @@ public class Crawler {
 
 	public void browse(Result r) {
 		try {
+			visitedPages += 1;
 			String url = r.url;
 			TagNode tag = fetchUrl(url);
 			
@@ -117,24 +119,35 @@ public class Crawler {
 			if (r.index) {
 				if (r.description == null || r.description.isEmpty())
 					r.appendSeoError("Description should be setted");
+				else if (r.description.length() < 80)
+					r.appendSeoError("Desription too short " + r.description.length());
 				else if (r.description.length() > 160)
 					r.appendSeoError("Description is too long, description length = " + r.description.length());
 			}
 			
-			if (r.seoError != null && !r.seoError.isEmpty())
+			if (r.seoError != null && !r.seoError.isEmpty()) {
 				seoErrors += 1;
-				
+//				System.out.println(r.url + " - " + r.seoError);
+			}
 			if(!r.follow) return;
 			
 			TagNode[] a = tag.getElementsByName("a", true);
-
+			
 			URI uri = URI.create(url);
 			for (TagNode t : a) {
 				String href = t.getAttributeByName("href");
-				if(href == null) continue;
-
-				if(href.endsWith("#"))
+				
+				if(href!= null && href.endsWith("#"))
 					href = href.substring(0, href.length()-1);
+				
+				if(href == null || href.isEmpty()) continue;
+				
+				String rel = t.getAttributeByName("rel");
+				if("nofollow".equals(rel))
+					continue;
+				
+
+				
 				try {
 					URI found = URI.create(href);
 					if(!found.isAbsolute())
@@ -184,6 +197,10 @@ public class Crawler {
 	
 	public int getSeoErrors() {
 		return seoErrors;
+	}
+	
+	public int getVisitedPages() {
+		return visitedPages;
 	}
 
 }

@@ -4,7 +4,9 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Label;
-import java.text.SimpleDateFormat;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -13,7 +15,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
@@ -23,18 +27,21 @@ import javax.swing.table.TableModel;
 
 public class Main {
 	
+	Crawler c = null;
+	
 	public static void main(String[] args) {
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
-				initApp();
+				
+				(new Main()).initApp();
 			}
 		});
 	}
 	
-	private static void initApp() {
+	private void initApp() {
 		long initTime = System.currentTimeMillis();
-		String url = "http://www.masterbranch.com/";
-		Crawler c = new Crawler(url, Pattern.quote(url)+"(.*?)");
+		String url = "http://localhost:9000/";
+		c = new Crawler(url, Pattern.quote(url)+"(.*?)");
 		int max = 5;
 		for(int i=0; i<=max; i++) {
 			c.browse(i);
@@ -44,11 +51,29 @@ public class Main {
 		long elapsedTime = endTime - initTime;
 		
 		JFrame frame = new JFrame("Results");
-		frame.getContentPane().add(new Label("Indexed pages: " + c.getIndexedPages() 
-				+ ". Indexed and noflow: " + c.getIndexedNoFollowPages() + ". Total pages: "
-				+ c.getResults().size() + ". Connection errors: " + c.getConnectionErrors()
-				+ ". Pages with SEO error: " + c.getSeoErrors() + ". Time spent (total minutes): " + (int)(elapsedTime/60000)
-				+ ". Time spent (per page ms): " + (elapsedTime/c.getResults().size())) , BorderLayout.NORTH);
+		
+		JPanel panel = new JPanel(new BorderLayout());
+		panel.add(new Label("Indexed pages: " + c.getIndexedPages() 
+				+ ". Indexed and noflow: " + c.getIndexedNoFollowPages() + ". Visited pages: "
+				+ c.getVisitedPages() + ". Connection errors: " + c.getConnectionErrors()
+				+ ". Pages with SEO error: " + c.getSeoErrors() + ".\nTotal time spent (minutes): " + (int)(elapsedTime/60000)
+				+ ". Time spent per page (ms): " + (elapsedTime/c.getResults().size())));
+		
+		JButton button = new JButton("Generate Sitemap");
+		button.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				try {
+					Sitemap.writeToFile(Sitemap.generateSitemap(c.getResults().values()));
+					System.out.println("Sitemap generated");
+				} catch (IOException exception) {
+					exception.printStackTrace();
+				}
+			}
+		});
+		
+		panel.add(button, BorderLayout.EAST);
+		
+		frame.getContentPane().add(panel , BorderLayout.NORTH);
 		JTable table = new JTable(new ResultTableModel(c.getResults().values(), url.length()-1));
 		frame.getContentPane().add(new JScrollPane(table));
 		
