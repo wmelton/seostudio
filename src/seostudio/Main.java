@@ -21,6 +21,7 @@ import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -47,6 +48,7 @@ public class Main {
 	private Crawler c = null;
 	
 	public static void main(final String[] args) {
+		System.out.println("Default charset: "+Charset.defaultCharset().name());
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				(new Main()).initApp();
@@ -143,8 +145,18 @@ public class Main {
 				
 				setToolTipText(null);
 				if(value != null) {
-					setBackground(Color.RED);
-					setToolTipText(value.toString());
+					List<String> list = (List<String>) value;
+					setText(""+list.size());
+					if(!list.isEmpty()) {
+						setBackground(Color.RED);
+						
+						StringBuilder tooltip = new StringBuilder("<html><ul style='margin:10px'>");
+						for (String string : list) {
+							tooltip.append("<li>"+string+"</li>");
+						}
+						tooltip.append("</ul></html>");
+						setToolTipText(tooltip.toString());
+					}
 				}
 				return this;
 			}
@@ -160,7 +172,7 @@ class ResultTableModel implements TableModel {
 			"Keywords", "I", "F", "Error", "SEO Errors" };
 	private final Class<?>[] types = new Class<?>[]{ String.class,
 			Integer.class, Integer.class, String.class, String.class, String.class,
-			String.class, Boolean.class, Boolean.class, String.class, String.class };
+			String.class, Boolean.class, Boolean.class, String.class, Integer.class };
 
 	private List<Result> results;
 	private int n;
@@ -227,7 +239,7 @@ class ResultTableModel implements TableModel {
 		case 9:
 			return r.error;
 		case 10:
-			return r.seoError;
+			return r.seoErrors;
 		}
 		return null;
 	}

@@ -15,9 +15,13 @@
  */
 package seostudio;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Result {
 	
 	public String url;
+	public String contentType;
 	public int depth;
 	public String error;
 	public String title;
@@ -28,7 +32,7 @@ public class Result {
 	public boolean follow;
 	public boolean visited;
 	public int links;
-	public String seoError;
+	public List<String> seoErrors = new ArrayList<String>();
 	
 	@Override
 	public String toString() {
@@ -39,11 +43,7 @@ public class Result {
 	}
 	
 	public void appendSeoError(String e) {
-		if (seoError == null)
-			seoError = new String();
-		if (!seoError.isEmpty())
-			seoError = seoError + " ";
-		seoError = seoError + e;
+		seoErrors.add(e);
 	}
 
 }

@@ -16,6 +16,7 @@
 package seostudio;
 
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
@@ -90,7 +91,8 @@ public class Crawler {
 		try {
 			visitedPages += 1;
 			String url = r.url;
-			TagNode tag = fetchUrl(url);
+			TagNode tag = fetchUrl(r, url);
+			if(tag == null) return;
 			
 			TagNode title = tag.findElementByName("title", true);
 			if(title != null)
@@ -133,15 +135,15 @@ public class Crawler {
 			
 			if (r.index) {
 				if (r.description == null || r.description.isEmpty())
-					r.appendSeoError("Description should be setted");
+					r.appendSeoError("No meta description");
 				else if (r.description.length() < 80)
-					r.appendSeoError("Desription too short " + r.description.length());
+					r.appendSeoError("Meta description too short " + r.description.length()+" characters");
 				else if (r.description.length() > 160)
-					r.appendSeoError("Description is too long, description length = " + r.description.length());
+					r.appendSeoError("Meta description too long. " + r.description.length()+" characters");
 			}
 			
-			if (r.seoError != null && !r.seoError.isEmpty()) {
-				seoErrors += 1;
+			if (!r.seoErrors.isEmpty()) {
+				seoErrors++;
 //				System.out.println(r.url + " - " + r.seoError);
 			}
 			if(!r.follow) return;
@@ -180,17 +182,32 @@ public class Crawler {
 		} catch(Exception e) {
 			r.error = "" + e.getMessage();
 			connectionErrors += 1;
+			e.printStackTrace();
 		}
 	}
 	
-	public static TagNode fetchUrl(String url) throws Exception {
+	public static TagNode fetchUrl(Result r, String url) throws Exception {
 		HtmlCleaner cleaner = new HtmlCleaner();
 		HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
 		if (conn.getResponseCode() != 200)
 			throw new Exception("Response code was: "+conn.getResponseCode()+" while fetching URL: "+url);
 
+		String contentType = conn.getHeaderField("content-type");
+		r.contentType = contentType;
+		if(!contentType.contains("text/html"))
+			return null;
+		
+		String charset = "iso-8859-1";
+		if(contentType != null) {
+			int i = contentType.indexOf("charset=");
+			if(i > 0) {
+				charset = contentType.substring(i+"charset=".length()).trim();
+			}
+		}
+		
 		InputStream in = conn.getInputStream();
-		TagNode tag = cleaner.clean(in);
+		InputStreamReader reader = new InputStreamReader(in, charset);
+		TagNode tag = cleaner.clean(reader);
 		return tag;
 	}
 	
